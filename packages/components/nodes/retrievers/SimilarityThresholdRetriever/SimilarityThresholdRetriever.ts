@@ -1,7 +1,7 @@
-import { VectorStore } from 'langchain/vectorstores/base'
+import { VectorStore } from '@langchain/core/vectorstores'
+import { ScoreThresholdRetriever } from 'langchain/retrievers/score_threshold'
 import { INode, INodeData, INodeParams, INodeOutputsValue } from '../../../src/Interface'
 import { handleEscapeCharacters } from '../../../src'
-import { ScoreThresholdRetriever } from 'langchain/retrievers/score_threshold'
 
 class SimilarityThresholdRetriever_Retrievers implements INode {
     label: string
@@ -74,11 +74,13 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
             {
                 label: 'Document',
                 name: 'document',
-                baseClasses: ['Document']
+                description: 'Array of document objects containing metadata and pageContent',
+                baseClasses: ['Document', 'json']
             },
             {
                 label: 'Text',
                 name: 'text',
+                description: 'Concatenated string from pageContent of documents',
                 baseClasses: ['string', 'json']
             }
         ]
@@ -98,6 +100,7 @@ class SimilarityThresholdRetriever_Retrievers implements INode {
             maxK: maxK ? parseInt(maxK, 10) : 100,
             kIncrement: kIncrement ? parseInt(kIncrement, 10) : 2
         })
+        retriever.filter = vectorStore?.lc_kwargs?.filter ?? (vectorStore as any).filter
 
         if (output === 'retriever') return retriever
         else if (output === 'document') return await retriever.getRelevantDocuments(query ? query : input)
